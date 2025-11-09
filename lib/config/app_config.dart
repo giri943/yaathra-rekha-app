@@ -6,6 +6,6 @@ class AppConfig {
   
   static const String googleClientId = String.fromEnvironment(
     'GOOGLE_CLIENT_ID',
-    defaultValue: '',
+    defaultValue: '1039473962656-arg00t89p580abtlokab16muh20u7mmd.apps.googleusercontent.com',
   );
 }

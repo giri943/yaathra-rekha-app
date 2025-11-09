@@ -6,7 +6,13 @@ import '../config/app_config.dart';
 
 class AuthService {
   static const String baseUrl = AppConfig.apiBaseUrl;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  late final GoogleSignIn _googleSignIn;
+  
+  AuthService() {
+    _googleSignIn = GoogleSignIn(
+      clientId: AppConfig.googleClientId,
+    );
+  }
 
   // Email/Phone Sign-In
   Future<Map<String, dynamic>?> signInWithEmailOrPhone(String emailOrPhone, String password) async {
