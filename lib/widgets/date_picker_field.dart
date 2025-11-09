@@ -37,9 +37,12 @@ class DatePickerField extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: GoogleFonts.notoSansMalayalam(fontSize: 16),
+            Flexible(
+              child: Text(
+                label,
+                style: GoogleFonts.notoSansMalayalam(fontSize: 16),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             Text(
               AppDateUtils.formatDate(selectedDate),

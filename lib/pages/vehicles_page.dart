@@ -16,7 +16,36 @@ class VehiclesPage extends StatefulWidget {
 
 class _VehiclesPageState extends State<VehiclesPage> {
   final VehicleService _vehicleService = VehicleService();
-  final String userId = 'current_user_id'; // Replace with actual user ID
+  final String userId = 'current_user_id';
+  List<Vehicle> _vehicles = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVehicles();
+  }
+
+  Future<void> _loadVehicles() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    
+    try {
+      final vehicles = await _vehicleService.getVehicles();
+      setState(() {
+        _vehicles = vehicles;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'എന്തോ തെറ്റ് സംഭവിച്ചു';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,61 +64,48 @@ class _VehiclesPageState extends State<VehiclesPage> {
         centerTitle: true,
         elevation: 2,
       ),
-      body: FutureBuilder<List<Vehicle>>(
-        future: _vehicleService.getVehicles(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'എന്തോ തെറ്റ് സംഭവിച്ചു',
-                style: GoogleFonts.notoSansMalayalam(fontSize: 16),
-              ),
-            );
-          }
-
-          final vehicles = snapshot.data ?? [];
-
-          if (vehicles.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.directions_car, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
-                    'വാഹനങ്ങൾ ഇല്ല',
-                    style: GoogleFonts.notoSansMalayalam(
-                      fontSize: 18,
-                      color: Colors.grey[600],
-                    ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Text(
+                    _error!,
+                    style: GoogleFonts.notoSansMalayalam(fontSize: 16),
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    'ആദ്യത്തെ വാഹനം ചേർക്കാൻ + ബട്ടൺ അമർത്തുക',
-                    style: GoogleFonts.notoSansMalayalam(
-                      fontSize: 14,
-                      color: Colors.grey[500],
+                )
+              : _vehicles.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.directions_car, size: 64, color: Colors.grey),
+                          SizedBox(height: 16),
+                          Text(
+                            'വാഹനങ്ങൾ ഇല്ല',
+                            style: GoogleFonts.notoSansMalayalam(
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'ആദ്യത്തെ വാഹനം ചേർക്കാൻ + ബട്ടൺ അമർത്തുക',
+                            style: GoogleFonts.notoSansMalayalam(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: EdgeInsets.all(16),
+                      itemCount: _vehicles.length,
+                      itemBuilder: (context, index) {
+                        final vehicle = _vehicles[index];
+                        return _buildVehicleCard(vehicle);
+                      },
                     ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: EdgeInsets.all(16),
-            itemCount: vehicles.length,
-            itemBuilder: (context, index) {
-              final vehicle = vehicles[index];
-              return _buildVehicleCard(vehicle);
-            },
-          );
-        },
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddVehicleDialog(),
         backgroundColor: Color(0xFF4B39EF),
@@ -99,7 +115,6 @@ class _VehiclesPageState extends State<VehiclesPage> {
   }
 
   Widget _buildVehicleCard(Vehicle vehicle) {
-    
     return Card(
       margin: EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -116,6 +131,14 @@ class _VehiclesPageState extends State<VehiclesPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                        vehicle.vehicleNumber,
+                        style: GoogleFonts.notoSansMalayalam(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF4B39EF),
+                        ),
+                      ),
                       Text(
                         vehicle.model,
                         style: GoogleFonts.notoSansMalayalam(
@@ -167,9 +190,7 @@ class _VehiclesPageState extends State<VehiclesPage> {
                 ),
               ],
             ),
-            
             SizedBox(height: 16),
-            
             _buildDateRow('ഇൻഷുറൻസ്:', AppDateUtils.formatDate(vehicle.insuranceExpiry)),
             _buildDateRow('ടാക്സ്:', AppDateUtils.formatDate(vehicle.taxDate)),
             _buildDateRow('ടെസ്റ്റ്:', AppDateUtils.formatDate(vehicle.testDate)),
@@ -212,6 +233,7 @@ class _VehiclesPageState extends State<VehiclesPage> {
 
   void _showVehicleDialog({Vehicle? vehicle}) {
     final isEdit = vehicle != null;
+    final vehicleNumberController = TextEditingController(text: vehicle?.vehicleNumber ?? '');
     final modelController = TextEditingController(text: vehicle?.model ?? '');
     final manufacturerController = TextEditingController(text: vehicle?.manufacturer ?? '');
     
@@ -232,6 +254,15 @@ class _VehiclesPageState extends State<VehiclesPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                TextField(
+                  controller: vehicleNumberController,
+                  decoration: InputDecoration(
+                    labelText: 'വാഹന നമ്പർ',
+                    labelStyle: GoogleFonts.notoSansMalayalam(),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 16),
                 TextField(
                   controller: modelController,
                   decoration: InputDecoration(
@@ -283,9 +314,10 @@ class _VehiclesPageState extends State<VehiclesPage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                if (modelController.text.isNotEmpty && manufacturerController.text.isNotEmpty) {
+                if (vehicleNumberController.text.isNotEmpty && modelController.text.isNotEmpty && manufacturerController.text.isNotEmpty) {
                   final newVehicle = Vehicle(
                     id: isEdit ? vehicle!.id : DateTime.now().millisecondsSinceEpoch.toString(),
+                    vehicleNumber: vehicleNumberController.text,
                     model: modelController.text,
                     manufacturer: manufacturerController.text,
                     insuranceExpiry: insuranceDate,
@@ -303,6 +335,7 @@ class _VehiclesPageState extends State<VehiclesPage> {
                       await _vehicleService.addVehicle(newVehicle);
                     }
                     Navigator.pop(context);
+                    _loadVehicles();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -334,8 +367,6 @@ class _VehiclesPageState extends State<VehiclesPage> {
     );
   }
 
-
-
   void _showDeleteConfirmation(Vehicle vehicle) {
     showDialog(
       context: context,
@@ -358,6 +389,7 @@ class _VehiclesPageState extends State<VehiclesPage> {
               try {
                 await _vehicleService.deleteVehicle(vehicle.id);
                 Navigator.pop(context);
+                _loadVehicles();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(

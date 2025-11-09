@@ -16,9 +16,10 @@ router.get('/', auth, async (req, res) => {
 // Add new vehicle
 router.post('/', auth, async (req, res) => {
   try {
-    const { model, manufacturer, insuranceExpiry, taxDate, testDate, pollutionDate } = req.body;
+    const { vehicleNumber, model, manufacturer, insuranceExpiry, taxDate, testDate, pollutionDate } = req.body;
     
     const vehicle = new Vehicle({
+      vehicleNumber,
       model,
       manufacturer,
       insuranceExpiry,
@@ -38,11 +39,11 @@ router.post('/', auth, async (req, res) => {
 // Update vehicle
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { model, manufacturer, insuranceExpiry, taxDate, testDate, pollutionDate } = req.body;
+    const { vehicleNumber, model, manufacturer, insuranceExpiry, taxDate, testDate, pollutionDate } = req.body;
     
     const vehicle = await Vehicle.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },
-      { model, manufacturer, insuranceExpiry, taxDate, testDate, pollutionDate },
+      { vehicleNumber, model, manufacturer, insuranceExpiry, taxDate, testDate, pollutionDate },
       { new: true }
     );
 
