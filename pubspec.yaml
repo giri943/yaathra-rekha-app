@@ -1,0 +1,35 @@
+name: yathra_rekha_app
+description: A Malayalam vehicle and contract management app
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=2.17.0 <4.0.0'
+  flutter: '>=3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Authentication
+  google_sign_in: ^6.1.5
+  shared_preferences: ^2.2.2
+  http: ^1.1.0
+  
+  # UI
+  google_fonts: ^6.1.0
+  cached_network_image: ^3.3.0
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # Utilities
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
