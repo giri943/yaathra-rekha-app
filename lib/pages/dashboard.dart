@@ -166,7 +166,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                     _buildDashboardCard(
                       context,
                       'കരാറുകൾ',
-                      'കരാറുകൾ കൈകാര്യം ചെയ്യുക',
+                      'കരാറുകൾ യാത്രകൾ കൈകാര്യം ചെയ്യുക',
                       Icons.description,
                       AppTheme.secondary,
                       () => _showComingSoon(context, 'കരാറുകൾ'),
@@ -174,7 +174,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                     _buildDashboardCard(
                       context,
                       'യാത്രകൾ',
-                      'യാത്രകൾ ട്രാക്ക് ചെയ്യുക',
+                      'സവാരി യാത്രകൾ ട്രാക്ക് ചെയ്യുക',
                       Icons.route,
                       AppTheme.tertiary,
                       () => _showComingSoon(context, 'യാത്രകൾ'),
