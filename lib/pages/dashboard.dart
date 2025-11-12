@@ -139,6 +139,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
             children: [
               Text(
                 'ഡാഷ്ബോർഡ്',
+                'സ്വാഗതം ${_currentUser?['name'] ?? ''}, ഡാഷ്ബോർഡ്',
                 style: GoogleFonts.notoSansMalayalam(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
