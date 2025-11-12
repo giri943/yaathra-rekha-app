@@ -46,6 +46,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/vehicles', require('./routes/vehicles'));
 app.use('/api/contracts', require('./routes/contracts'));
 app.use('/api/trips', require('./routes/trips'));
+app.use('/api/drivers', require('./routes/drivers'));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Yathra Rekha API Server' });
