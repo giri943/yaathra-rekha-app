@@ -14,11 +14,22 @@ A Malayalam-language mobile application for managing contract carriers and vehic
   - Delete vehicles
   - View all vehicles with expiry dates
 
-### 🚧 Coming Next (Phase 2)
+### ✅ Phase 2: Contracts & Trips Management
 - **Contracts Management** (കരാറുകൾ)
+  - Add/edit/delete contracts with vehicle assignment
+  - Contract end date tracking for expiry notifications
+  - Rate and distance management
 - **Trips Management** (യാത്രകൾ)
+  - Contract trips with auto-filled details from contracts
+  - Savari trips with kilometer-based rate calculation
+  - Driver salary calculation (25% default or manual)
+  - Trip notes and client information
+  - Driver salary payment tracking
+
+### 🚧 Coming Next (Phase 3)
 - **Reports & Summaries** (സംഗ്രഹങ്ങൾ)
 - **Notifications** for document expiry
+- **PDF Export** functionality
 
 ## Tech Stack
 
@@ -145,8 +156,12 @@ The app is designed with Malayalam-first approach:
 - [x] Dashboard navigation
 - [x] Vehicles CRUD operations
 - [x] Backend API for vehicles
-- [ ] Contracts management
-- [ ] Trips management
+- [x] Contracts management
+- [x] Trips management
+  - [x] Contract trips with auto-fill from contracts
+  - [x] Savari trips with km-based calculations
+  - [x] Driver salary calculation and tracking
+  - [x] Trip notes and client management
 - [ ] Reports and summaries
 - [ ] Document expiry notifications
 - [ ] PDF export functionality
