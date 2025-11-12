@@ -3,11 +3,31 @@ const router = express.Router();
 const Vehicle = require('../models/Vehicle');
 const auth = require('../middleware/auth');
 
-// Get all vehicles for authenticated user
+// Get all vehicles for authenticated user with pagination
 router.get('/', auth, async (req, res) => {
   try {
-    const vehicles = await Vehicle.find({ userId: req.user.id });
-    res.json(vehicles);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    
+    const vehicles = await Vehicle.find({ userId: req.user.id })
+      .sort({ createdAt: -1 })
+      .skip(offset)
+      .limit(limit);
+      
+    const total = await Vehicle.countDocuments({ userId: req.user.id });
+    
+    res.json({
+      vehicles,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+        hasNext: page < Math.ceil(total / limit),
+        hasPrev: page > 1
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -39,11 +59,29 @@ router.post('/', auth, async (req, res) => {
 // Update vehicle
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { vehicleNumber, model, manufacturer, insuranceExpiry, taxDate, testDate, pollutionDate } = req.body;
+    const { vehicleNumber, 
+      model, 
+      manufacturer, 
+      insuranceExpiry, 
+      taxDate, 
+      testDate, 
+      pollutionDate,
+      fixedRateFor5Km,
+      perKmRate
+     } = req.body;
     
     const vehicle = await Vehicle.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },
-      { vehicleNumber, model, manufacturer, insuranceExpiry, taxDate, testDate, pollutionDate },
+      { vehicleNumber, 
+        model, 
+        manufacturer, 
+        insuranceExpiry, 
+        taxDate, 
+        testDate, 
+        pollutionDate,
+        fixedRateFor5Km,
+        perKmRate
+      },
       { new: true }
     );
 

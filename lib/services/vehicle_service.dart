@@ -20,17 +20,41 @@ class VehicleService {
     };
   }
 
-  Future<List<Vehicle>> getVehicles() async {
+  Future<Map<String, dynamic>> getVehicles({int page = 1, int limit = 10}) async {
     try {
       final headers = await _getHeaders();
       final response = await http.get(
-        Uri.parse('$baseUrl/vehicles'),
+        Uri.parse('$baseUrl/vehicles?page=$page&limit=$limit'),
         headers: headers,
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data.map((json) => Vehicle.fromJson(json)).toList();
+        final data = json.decode(response.body);
+        final List<Vehicle> vehicles = (data['vehicles'] as List).map((json) => Vehicle.fromJson(json)).toList();
+        
+        return {
+          'vehicles': vehicles,
+          'pagination': data['pagination']
+        };
+      } else {
+        throw Exception('Failed to load vehicles');
+      }
+    } catch (e) {
+      throw Exception('Error fetching vehicles: $e');
+    }
+  }
+  
+  Future<List<Vehicle>> getAllVehicles() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/vehicles?limit=1000'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return (data['vehicles'] as List).map((json) => Vehicle.fromJson(json)).toList();
       } else {
         throw Exception('Failed to load vehicles');
       }

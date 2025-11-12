@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_theme.dart';
+import '../theme/modern_theme.dart';
 import '../services/auth_service.dart';
 import '../config/app_config.dart';
 import 'vehicles_page.dart';
+import 'contracts_page.dart';
+import 'trips_page.dart';
+import 'drivers_page.dart';
 import 'welcome.dart';
 
 class DashboardWidget extends StatefulWidget {
@@ -33,9 +36,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primaryBackground,
+      backgroundColor: ModernTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.primary,
+        backgroundColor: ModernTheme.primary,
         title: Text(
           'യാത്ര രേഖ',
           style: GoogleFonts.notoSansMalayalam(
@@ -61,7 +64,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                         return Text(
                           _currentUser?['name']?.substring(0, 1).toUpperCase() ?? 'U',
                           style: GoogleFonts.notoSansMalayalam(
-                            color: AppTheme.primary,
+                            color: ModernTheme.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         );
@@ -71,7 +74,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                 : Text(
                     _currentUser?['name']?.substring(0, 1).toUpperCase() ?? 'U',
                     style: GoogleFonts.notoSansMalayalam(
-                      color: AppTheme.primary,
+                      color: ModernTheme.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -138,12 +141,11 @@ class _DashboardWidgetState extends State<DashboardWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'ഡാഷ്ബോർഡ്',
-                'സ്വാഗതം ${_currentUser?['name'] ?? ''}, ഡാഷ്ബോർഡ്',
+                'സ്വാഗതം ${_currentUser?['name'] ?? ''}',
                 style: GoogleFonts.notoSansMalayalam(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryText,
+                  color: ModernTheme.textPrimary,
                 ),
               ),
               const SizedBox(height: 24),
@@ -158,7 +160,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                       'വാഹനങ്ങൾ',
                       'വാഹനങ്ങൾ കൈകാര്യം ചെയ്യുക',
                       Icons.directions_car,
-                      AppTheme.primary,
+                      ModernTheme.primary,
                       () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const VehiclesPage()),
@@ -167,25 +169,42 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                     _buildDashboardCard(
                       context,
                       'കരാറുകൾ',
-                      'കരാറുകൾ യാത്രകൾ കൈകാര്യം ചെയ്യുക',
+                      'കരാറുകൾ കൈകാര്യം ചെയ്യുക',
                       Icons.description,
-                      AppTheme.secondary,
-                      () => _showComingSoon(context, 'കരാറുകൾ'),
+                      ModernTheme.secondary,
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ContractsPage()),
+                      ),
                     ),
                     _buildDashboardCard(
                       context,
                       'യാത്രകൾ',
                       'സവാരി യാത്രകൾ ട്രാക്ക് ചെയ്യുക',
                       Icons.route,
-                      AppTheme.tertiary,
-                      () => _showComingSoon(context, 'യാത്രകൾ'),
+                      ModernTheme.tertiary,
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const TripsPage()),
+                      ),
+                    ),
+                    _buildDashboardCard(
+                      context,
+                      'ഡ്രൈവർമാർ',
+                      'ഡ്രൈവർ വിവരങ്ങൾ കൈകാര്യം ചെയ്യുക',
+                      Icons.person,
+                      Color(0xFF059669),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const DriversPage()),
+                      ),
                     ),
                     _buildDashboardCard(
                       context,
                       'സംഗ്രഹങ്ങൾ',
                       'റിപ്പോർട്ടുകൾ കാണുക',
                       Icons.analytics,
-                      AppTheme.accent1,
+                      ModernTheme.accent,
                       () => _showComingSoon(context, 'സംഗ്രഹങ്ങൾ'),
                     ),
                   ],
@@ -206,52 +225,74 @@ class _DashboardWidgetState extends State<DashboardWidget> {
     Color color,
     VoidCallback onTap,
   ) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: LinearGradient(
-              colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: Offset(0, 4),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 48,
-                color: color,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: GoogleFonts.notoSansMalayalam(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryText,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [color, color.withValues(alpha: 0.8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 32,
+                    color: Colors.white,
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: GoogleFonts.notoSansMalayalam(
-                  fontSize: 12,
-                  color: AppTheme.secondaryText,
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  style: GoogleFonts.notoSansMalayalam(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1E293B),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.notoSansMalayalam(
+                    fontSize: 12,
+                    color: Color(0xFF64748B),
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -279,7 +320,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
               child: Text(
                 'ശരി',
                 style: GoogleFonts.notoSansMalayalam(
-                  color: AppTheme.primary,
+                  color: ModernTheme.primary,
                 ),
               ),
             ),

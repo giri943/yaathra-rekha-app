@@ -34,7 +34,7 @@ class _WelcomeWidgetState extends State<WelcomeWidget> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 5),
                         ),
@@ -43,7 +43,7 @@ class _WelcomeWidgetState extends State<WelcomeWidget> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         child: const Icon(
                           Icons.local_shipping,
                           size: 120,
@@ -75,7 +75,7 @@ class _WelcomeWidgetState extends State<WelcomeWidget> {
                         AppConstants.appDescription,
                         style: GoogleFonts.notoSansMalayalam(
                           fontSize: 18,
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                         ),
                         textAlign: TextAlign.center,
                       ),

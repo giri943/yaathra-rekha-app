@@ -9,6 +9,8 @@ class Vehicle {
   final DateTime pollutionDate;
   final String userId;
   final DateTime createdAt;
+  final double fixedRateFor5Km;
+  final double perKmRate;
 
   Vehicle({
     required this.id,
@@ -21,6 +23,8 @@ class Vehicle {
     required this.pollutionDate,
     required this.userId,
     required this.createdAt,
+    required this.fixedRateFor5Km,
+    required this.perKmRate,
   });
 
   Map<String, dynamic> toJson() {
@@ -35,21 +39,25 @@ class Vehicle {
       'pollutionDate': pollutionDate.toIso8601String(),
       'userId': userId,
       'createdAt': createdAt.toIso8601String(),
+      'fixedRateFor5Km': fixedRateFor5Km,
+      'perKmRate': perKmRate,
     };
   }
 
   factory Vehicle.fromJson(Map<String, dynamic> json) {
     return Vehicle(
-      id: json['_id'] ?? json['id'] ?? '',
-      vehicleNumber: json['vehicleNumber'] ?? '',
-      model: json['model'] ?? '',
-      manufacturer: json['manufacturer'] ?? '',
-      insuranceExpiry: DateTime.parse(json['insuranceExpiry']),
-      taxDate: DateTime.parse(json['taxDate']),
-      testDate: DateTime.parse(json['testDate']),
-      pollutionDate: DateTime.parse(json['pollutionDate']),
-      userId: json['userId'] ?? '',
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+      id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
+      vehicleNumber: json['vehicleNumber']?.toString() ?? '',
+      model: json['model']?.toString() ?? '',
+      manufacturer: json['manufacturer']?.toString() ?? '',
+      insuranceExpiry: DateTime.tryParse(json['insuranceExpiry']?.toString() ?? '') ?? DateTime.now(),
+      taxDate: DateTime.tryParse(json['taxDate']?.toString() ?? '') ?? DateTime.now(),
+      testDate: DateTime.tryParse(json['testDate']?.toString() ?? '') ?? DateTime.now(),
+      pollutionDate: DateTime.tryParse(json['pollutionDate']?.toString() ?? '') ?? DateTime.now(),
+      userId: json['userId']?.toString() ?? '',
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
+      fixedRateFor5Km: (json['fixedRateFor5Km'] as num?)?.toDouble() ?? 0.0,
+      perKmRate: (json['perKmRate'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
