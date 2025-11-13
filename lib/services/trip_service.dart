@@ -20,7 +20,7 @@ class TripService {
 
   Future<Map<String, dynamic>> getTrips({
     int page = 1, 
-    int limit = 5,
+    int limit = 10,
     String? tripType,
     String? vehicleId,
     String? contractId,
