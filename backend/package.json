@@ -1,23 +1,24 @@
 {
   "name": "yathra-rekha-backend",
   "version": "1.0.0",
-  "description": "Backend API for Yathra Rekha vehicle management app",
+  "description": "Backend for Yathra Rekha vehicle management app",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "google-auth-library": "^9.4.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.0.3",
-    "node-fetch": "^2.7.0"
+    "google-auth-library": "^8.7.0",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.0",
+    "pdfkit": "^0.13.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.1.11"
   }
 }

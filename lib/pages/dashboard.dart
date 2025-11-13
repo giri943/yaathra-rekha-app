@@ -7,6 +7,7 @@ import 'vehicles_page.dart';
 import 'contracts_page.dart';
 import 'trips_page.dart';
 import 'drivers_page.dart';
+import 'summary_page.dart';
 import 'welcome.dart';
 
 class DashboardWidget extends StatefulWidget {
@@ -205,7 +206,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                       'റിപ്പോർട്ടുകൾ കാണുക',
                       Icons.analytics,
                       ModernTheme.accent,
-                      () => _showComingSoon(context, 'സംഗ്രഹങ്ങൾ'),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SummaryPage()),
+                      ),
                     ),
                   ],
                 ),
@@ -296,37 +300,6 @@ class _DashboardWidgetState extends State<DashboardWidget> {
           ),
         ),
       ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'ഉടൻ വരുന്നു',
-            style: GoogleFonts.notoSansMalayalam(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: Text(
-            '$feature ഫീച്ചർ ഉടൻ ലഭ്യമാകും!',
-            style: GoogleFonts.notoSansMalayalam(),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'ശരി',
-                style: GoogleFonts.notoSansMalayalam(
-                  color: ModernTheme.primary,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 
