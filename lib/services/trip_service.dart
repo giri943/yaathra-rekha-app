@@ -7,7 +7,7 @@ import '../models/driver.dart';
 import 'auth_service.dart';
 
 class TripService {
-  static const String baseUrl = 'http://localhost:3000/api';
+  static const String baseUrl = 'https://yaathra-rekha-app.onrender.com/api';
   final AuthService _authService = AuthService();
 
   Future<Map<String, String>> _getHeaders() async {
@@ -20,7 +20,7 @@ class TripService {
 
   Future<Map<String, dynamic>> getTrips({
     int page = 1, 
-    int limit = 10,
+    int limit = 5,
     String? tripType,
     String? vehicleId,
     String? contractId,
