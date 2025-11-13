@@ -7,6 +7,7 @@ import '../models/driver.dart';
 import '../services/trip_service.dart';
 import '../services/driver_service.dart';
 import '../utils/date_utils.dart';
+import '../widgets/trip_accordion_card.dart';
 
 class TripsPage extends StatefulWidget {
   const TripsPage({super.key});
@@ -15,9 +16,10 @@ class TripsPage extends StatefulWidget {
   State<TripsPage> createState() => _TripsPageState();
 }
 
-class _TripsPageState extends State<TripsPage> {
+class _TripsPageState extends State<TripsPage> with SingleTickerProviderStateMixin {
   final TripService _tripService = TripService();
   final ScrollController _scrollController = ScrollController();
+  late TabController _tabController;
 
   List<Trip> _trips = [];
   List<Trip> _filteredTrips = [];
@@ -30,9 +32,9 @@ class _TripsPageState extends State<TripsPage> {
   String? _error;
   int _currentPage = 1;
   bool _hasMore = true;
+  String? _expandedTripId;
   
   // Filter variables
-  String? _selectedTripType;
   String? _selectedVehicleId;
   String? _selectedContractId;
   String? _selectedSalaryStatus;
@@ -43,12 +45,19 @@ class _TripsPageState extends State<TripsPage> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        _loadData();
+      }
+    });
     _loadData();
     _scrollController.addListener(_onScroll);
   }
   
   @override
   void dispose() {
+    _tabController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -74,9 +83,10 @@ class _TripsPageState extends State<TripsPage> {
     });
 
     try {
+      final tripType = _tabController.index == 0 ? 'contract' : 'savari';
       final data = await _tripService.getTrips(
         page: 1,
-        tripType: _selectedTripType,
+        tripType: tripType,
         vehicleId: _selectedVehicleId,
         contractId: _selectedContractId,
         salaryPaid: _selectedSalaryStatus,
@@ -113,9 +123,10 @@ class _TripsPageState extends State<TripsPage> {
     });
     
     try {
+      final tripType = _tabController.index == 0 ? 'contract' : 'savari';
       final tripsData = await _tripService.getTrips(
         page: _currentPage + 1,
-        tripType: _selectedTripType,
+        tripType: tripType,
         vehicleId: _selectedVehicleId,
         contractId: _selectedContractId,
         salaryPaid: _selectedSalaryStatus,
@@ -151,7 +162,7 @@ class _TripsPageState extends State<TripsPage> {
           ),
         ),
         centerTitle: true,
-        elevation: 2,
+        elevation: 0,
         actions: [
           IconButton(
             icon: Icon(_showFilters ? Icons.filter_list_off : Icons.filter_list, color: Colors.white),
@@ -162,6 +173,25 @@ class _TripsPageState extends State<TripsPage> {
             },
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Colors.white,
+          indicatorWeight: 3,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
+          labelStyle: GoogleFonts.notoSansMalayalam(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: GoogleFonts.notoSansMalayalam(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+          ),
+          tabs: [
+            Tab(text: 'കരാർ'),
+            Tab(text: 'സവാരി'),
+          ],
+        ),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -218,7 +248,18 @@ class _TripsPageState extends State<TripsPage> {
                                 );
                               }
                               final trip = _filteredTrips[index];
-                              return _buildTripCard(trip);
+                              return TripAccordionCard(
+                                trip: trip,
+                                contracts: _contracts,
+                                isExpanded: _expandedTripId == trip.id,
+                                onToggle: () {
+                                  setState(() {
+                                    _expandedTripId = _expandedTripId == trip.id ? null : trip.id;
+                                  });
+                                },
+                                onEdit: () => _showEditTripDialog(trip),
+                                onDelete: () => _showDeleteConfirmation(trip),
+                              );
                             },
                           ),
                           if (_isFiltering)
@@ -267,468 +308,6 @@ class _TripsPageState extends State<TripsPage> {
         onPressed: () => _showAddTripDialog(),
         backgroundColor: Color(0xFF4B39EF),
         child: Icon(Icons.add, color: Colors.white),
-      ),
-    );
-  }
-
-  Widget _buildTripCard(Trip trip) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Header with trip type and status
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: trip.tripType == 'contract' 
-                  ? [Color(0xFF4B39EF), Color(0xFF6366F1)]
-                  : [Color(0xFF10B981), Color(0xFF059669)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    trip.tripType == 'contract' ? Icons.assignment : Icons.local_taxi,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        trip.tripType == 'contract' ? 'കരാർ യാത്ര' : 'സവാരി യാത്ര',
-                        style: GoogleFonts.notoSansMalayalam(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        AppDateUtils.formatDate(trip.tripDate),
-                        style: GoogleFonts.notoSansMalayalam(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: trip.driverSalaryPaid ? Colors.white.withValues(alpha: 0.2) : Colors.orange,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    trip.driverSalaryPaid ? 'ശമ്പളം നൽകി' : 'ശമ്പളം നൽകിയില്ല',
-                    style: GoogleFonts.notoSansMalayalam(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8),
-                PopupMenuButton(
-                  icon: Icon(Icons.more_vert, color: Colors.white),
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit, size: 18, color: Color(0xFF4B39EF)),
-                          SizedBox(width: 8),
-                          Text('പുതുക്കുക', style: GoogleFonts.notoSansMalayalam()),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete, size: 18, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text('നീക്കം ചെയ്യുക', 
-                            style: GoogleFonts.notoSansMalayalam(color: Colors.red)),
-                        ],
-                      ),
-                    ),
-                  ],
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      _showEditTripDialog(trip);
-                    } else if (value == 'delete') {
-                      _showDeleteConfirmation(trip);
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-          // Content
-          Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Client and Vehicle Info
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildInfoCard(
-                        icon: Icons.person,
-                        title: 'ഉപഭോക്താവ്',
-                        subtitle: trip.clientName,
-                        extra: trip.clientMobile,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: _buildInfoCard(
-                        icon: Icons.directions_car,
-                        title: 'വാഹനം',
-                        subtitle: trip.vehicle?.vehicleNumber ?? 'N/A',
-                        extra: trip.vehicle?.model,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12),
-                // Driver and Rate Info
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildInfoCard(
-                        icon: Icons.person_pin,
-                        title: 'ഡ്രൈവർ',
-                        subtitle: trip.driverName,
-                        extra: '₹${trip.driverSalary.toStringAsFixed(0)}${trip.isDriverSalaryManual ? ' (മാനുവൽ)' : ''}',
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: _buildInfoCard(
-                        icon: Icons.currency_rupee,
-                        title: 'യാത്രാ നിരക്ക്',
-                        subtitle: '₹${trip.tripRate.toStringAsFixed(0)}',
-                        extra: trip.tripType == 'savari' && trip.distance != null 
-                          ? '${trip.distance!.toStringAsFixed(1)} കി.മീ' : null,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12),
-                // Owner take home
-                Container(
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Color(0xFFF0FDF4),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Color(0xFFBBF7D0)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.account_balance_wallet, size: 16, color: Color(0xFF059669)),
-                      SizedBox(width: 8),
-                      Text(
-                        'ഉടമയുടെ വരുമാനം:',
-                        style: GoogleFonts.notoSansMalayalam(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF059669),
-                        ),
-                      ),
-                      Spacer(),
-                      Text(
-                        '₹${trip.ownerTakeHome.toStringAsFixed(0)}',
-                        style: GoogleFonts.notoSansMalayalam(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF047857),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Km readings for all trips
-                if (trip.startKm != null && trip.endKm != null) ...[
-                  SizedBox(height: 12),
-                  _buildTripDistanceCard(trip),
-                ],
-                // Rate breakup for savari trips
-                if (trip.tripType == 'savari' && trip.fixedRateUsed != null && trip.perKmRateUsed != null) ...[
-                  SizedBox(height: 12),
-                  Container(
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFEFF6FF),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Color(0xFFBFDBFE)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.calculate, size: 14, color: Color(0xFF1D4ED8)),
-                            SizedBox(width: 6),
-                            Text(
-                              'നിരക്ക് വിവരണം',
-                              style: GoogleFonts.notoSansMalayalam(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF1D4ED8),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 6),
-                        if (trip.distance != null && trip.distance! <= 5) ...[
-                          Text(
-                            '5 കി.മീ വരെ: ₹${trip.fixedRateUsed!.toStringAsFixed(0)}',
-                            style: GoogleFonts.notoSansMalayalam(
-                              fontSize: 10,
-                              color: Color(0xFF1E3A8A),
-                            ),
-                          ),
-                        ] else if (trip.distance != null && trip.additionalKm != null) ...[
-                          Text(
-                            '5 കി.മീ വരെ: ₹${trip.fixedRateUsed!.toStringAsFixed(0)}',
-                            style: GoogleFonts.notoSansMalayalam(
-                              fontSize: 10,
-                              color: Color(0xFF1E3A8A),
-                            ),
-                          ),
-                          Text(
-                            'അധിക ${trip.additionalKm!.toStringAsFixed(1)} കി.മീ: ₹${(trip.additionalKm! * trip.perKmRateUsed!).toStringAsFixed(0)}',
-                            style: GoogleFonts.notoSansMalayalam(
-                              fontSize: 10,
-                              color: Color(0xFF1E3A8A),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-                // Notes
-                if (trip.notes != null && trip.notes!.isNotEmpty) ...[
-                  SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFFEF3C7),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Color(0xFFFDE68A)),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.note, size: 16, color: Color(0xFFD97706)),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            trip.notes!,
-                            style: GoogleFonts.notoSansMalayalam(
-                              fontSize: 12,
-                              color: Color(0xFF92400E),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTripDistanceCard(Trip trip) {
-    final distance = trip.distance ?? (trip.endKm! - trip.startKm!);
-    bool isExceeded = false;
-    double? averageDistance;
-    
-    if (trip.tripType == 'contract') {
-      // Try to get average distance from populated contract or find it in contracts list
-      if (trip.contract != null) {
-        averageDistance = trip.contract!.averageDistance;
-      } else if (trip.contractId != null) {
-        try {
-          final contract = _contracts.firstWhere((c) => c.id == trip.contractId);
-          averageDistance = contract.averageDistance;
-        } catch (e) {
-          // Contract not found in list
-        }
-      }
-      
-      if (averageDistance != null) {
-        isExceeded = distance > averageDistance;
-      }
-    }
-    
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isExceeded ? Color(0xFFFEF2F2) : Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isExceeded ? Color(0xFFFECACA) : Color(0xFFE2E8F0),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                isExceeded ? Icons.warning : Icons.speed,
-                size: 16,
-                color: isExceeded ? Color(0xFFDC2626) : Color(0xFF64748B),
-              ),
-              SizedBox(width: 8),
-              Text(
-                'കി.മീ വിവരം:',
-                style: GoogleFonts.notoSansMalayalam(
-                  fontSize: 12,
-                  color: isExceeded ? Color(0xFFDC2626) : Color(0xFF64748B),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Spacer(),
-              Text(
-                '${trip.startKm!.toStringAsFixed(0)} → ${trip.endKm!.toStringAsFixed(0)}',
-                style: GoogleFonts.notoSansMalayalam(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isExceeded ? Color(0xFFB91C1C) : Color(0xFF1E293B),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 4),
-          Row(
-            children: [
-              Text(
-                'മൊത്തം ദൂരം: ${distance.toStringAsFixed(1)} കി.മീ',
-                style: GoogleFonts.notoSansMalayalam(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: isExceeded ? Color(0xFFDC2626) : Color(0xFF1E293B),
-                ),
-              ),
-              if (averageDistance != null) ...[
-                Spacer(),
-                Text(
-                  'ശരാശരി: ${averageDistance.toStringAsFixed(1)} കി.മീ',
-                  style: GoogleFonts.notoSansMalayalam(
-                    fontSize: 10,
-                    color: isExceeded ? Color(0xFFB91C1C) : Color(0xFF64748B),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          if (isExceeded && averageDistance != null) ...[
-            SizedBox(height: 4),
-            Text(
-              'അധിക ദൂരം: ${(distance - averageDistance).toStringAsFixed(1)} കി.മീ',
-              style: GoogleFonts.notoSansMalayalam(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFFDC2626),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    String? extra,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: Color(0xFF64748B)),
-              SizedBox(width: 6),
-              Text(
-                title,
-                style: GoogleFonts.notoSansMalayalam(
-                  fontSize: 11,
-                  color: Color(0xFF64748B),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: GoogleFonts.notoSansMalayalam(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF1E293B),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          if (extra != null) ...[
-            SizedBox(height: 2),
-            Text(
-              extra,
-              style: GoogleFonts.notoSansMalayalam(
-                fontSize: 11,
-                color: Color(0xFF64748B),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ],
       ),
     );
   }
@@ -823,29 +402,6 @@ class _TripsPageState extends State<TripsPage> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  initialValue: _selectedTripType,
-                  decoration: InputDecoration(
-                    labelText: 'യാത്രയുടെ തരം',
-                    labelStyle: GoogleFonts.notoSansMalayalam(fontSize: 12),
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  items: [
-                    DropdownMenuItem(value: null, child: Text('എല്ലാം', style: GoogleFonts.notoSansMalayalam(fontSize: 12))),
-                    DropdownMenuItem(value: 'contract', child: Text('കരാർ', style: GoogleFonts.notoSansMalayalam(fontSize: 12))),
-                    DropdownMenuItem(value: 'savari', child: Text('സവാരി', style: GoogleFonts.notoSansMalayalam(fontSize: 12))),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedTripType = value;
-                    });
-                    _loadData(isFilter: true);
-                  },
-                ),
-              ),
-              SizedBox(width: 8),
-              Expanded(
-                child: DropdownButtonFormField<String>(
                   initialValue: _selectedVehicleId,
                   decoration: InputDecoration(
                     labelText: 'വാഹനം',
@@ -870,7 +426,7 @@ class _TripsPageState extends State<TripsPage> {
               ),
             ],
           ),
-          if (_selectedTripType == 'contract') ...[
+          if (_tabController.index == 0) ...[
             SizedBox(height: 8),
             DropdownButtonFormField<String>(
               initialValue: _selectedContractId,
@@ -1044,7 +600,6 @@ class _TripsPageState extends State<TripsPage> {
 
   void _clearFilters() {
     setState(() {
-      _selectedTripType = null;
       _selectedVehicleId = null;
       _selectedContractId = null;
       _selectedSalaryStatus = null;
