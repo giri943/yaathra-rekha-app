@@ -192,8 +192,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                       context,
                       'ഡ്രൈവർമാർ',
                       'ഡ്രൈവർ വിവരങ്ങൾ കൈകാര്യം ചെയ്യുക',
-                      Icons.person,
-                      Color(0xFF059669),
+                      Icons.contacts,
+                      Color(0xFFF59E0B),
                       () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const DriversPage()),
