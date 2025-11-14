@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,7 +11,10 @@ class AuthService {
   
   AuthService() {
     _googleSignIn = GoogleSignIn(
-      clientId: AppConfig.googleClientId,
+      // For Web: Use the web client ID
+      // For Android: Don't set clientId - google-services.json handles it
+      clientId: kIsWeb ? AppConfig.googleClientId : null,
+      scopes: ['email'],
     );
   }
 
@@ -33,7 +37,7 @@ class AuthService {
       }
       return null;
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -58,7 +62,7 @@ class AuthService {
         throw error['message'] ?? 'Registration failed';
       }
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -86,7 +90,7 @@ class AuthService {
       }
       return null;
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -179,7 +183,7 @@ class AuthService {
       }
       return null;
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 }
